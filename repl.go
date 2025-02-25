@@ -11,7 +11,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*CommandConfig) error
+	callback    func(*CommandConfig, ...string) error
 }
 
 func runRepl(config *CommandConfig) {
@@ -26,9 +26,15 @@ func runRepl(config *CommandConfig) {
 		if len(input) == 0 {
 			continue
 		}
-		commandName := cleanInput(input)[0]
+		userInput := cleanInput(input)
+		commandName := userInput[0]
+		var commandArgument string
+		if len(userInput) > 1 {
+			commandArgument = userInput[1]
+		}
+
 		if command, ok := getCommands()[commandName]; ok {
-			err := command.callback(config)
+			err := command.callback(config, commandArgument)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -69,6 +75,11 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Lists the previous 20 locations",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explores a location",
+			callback:    commandExplore,
 		},
 	}
 }
