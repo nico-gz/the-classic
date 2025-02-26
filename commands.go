@@ -93,12 +93,36 @@ func commandCatch(config *CommandConfig, args ...string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Throwing a Pokeball at %s\n", pokemon.Name)
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
 	if 36+rand.Intn(580) < pokemon.BaseExperience {
-		fmt.Printf("%s escaped\n", pokemon.Name)
+		fmt.Printf("%s escaped\n", pokemonName)
 	} else {
-		fmt.Printf("%s was captured\n", pokemon.Name)
+		fmt.Printf("%s was captured\n", pokemonName)
 		config.Pokedex[pokemonName] = pokemon
+	}
+
+	return nil
+}
+
+func commandInspect(config *CommandConfig, args ...string) error {
+	pokemonName := args[0]
+	if pokemonName == "" {
+		return fmt.Errorf("missing required argument <pokemon-name>")
+	}
+	pokemon, ok := config.Pokedex[pokemonName]
+	if !ok {
+		return fmt.Errorf("that pokemon has not been caught yet")
+	}
+	fmt.Printf("Name: %s\n", pokemon.Name)
+	fmt.Printf("Height: %d\n", pokemon.Height)
+	fmt.Printf("Weigth: %d\n", pokemon.Weight)
+	fmt.Println("Stats:")
+	for _, stat := range pokemon.Stats {
+		fmt.Printf("  -%s: %d\n", stat.Stat.Name, stat.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, pokeType := range pokemon.Types {
+		fmt.Printf("  - %s\n", pokeType.Type.Name)
 	}
 
 	return nil
