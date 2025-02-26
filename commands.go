@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/nico-gz/pokedexcli/internal/pokeapi"
@@ -9,6 +10,7 @@ import (
 
 type CommandConfig struct {
 	PokeapiClient pokeapi.Client
+	Pokedex       map[string]pokeapi.Pokemon
 	Next          *string
 	Previous      *string
 	Id            *string
@@ -82,14 +84,22 @@ func commandExplore(config *CommandConfig, args ...string) error {
 	return nil
 }
 
-/*
-After a user uses the map commands to find a location area, we want them to be able to see a list of all the Pokémon located there.
- Tips
+func commandCatch(config *CommandConfig, args ...string) error {
+	pokemonName := args[0]
+	if pokemonName == "" {
+		return fmt.Errorf("missing required argument <pokemon-name>")
+	}
+	pokemon, err := config.PokeapiClient.GetPokemon(pokemonName)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Throwing a Pokeball at %s\n", pokemon.Name)
+	if 36+rand.Intn(580) < pokemon.BaseExperience {
+		fmt.Printf("%s escaped\n", pokemon.Name)
+	} else {
+		fmt.Printf("%s was captured\n", pokemon.Name)
+		config.Pokedex[pokemonName] = pokemon
+	}
 
-    Use the same PokeAPI location-area endpoint, but this time you'll need to pass the name of the location area being explored. By adding a name or id, the API will return a lot more information about the location area.
-    Feel free to use tools like JSON lint and JSON to Go to help you parse the response.
-    Parse the Pokemon's names from the response and display them to the user.
-    Make sure to use the caching layer again! Re-exploring an area should be blazingly fast.
-    You'll need to alter the function signature of all your commands to allow them to allow parameters. E.g. explore <area_name>
-
-*/
+	return nil
+}

@@ -163,3 +163,43 @@ func (client *Client) GetPokemonInArea(location string) ([]string, error) {
 	client.cache.Add(url, data)
 	return encounters, nil
 }
+
+func (client *Client) GetPokemon(pokemonName string) (Pokemon, error) {
+	var pokemon Pokemon
+
+	if pokemonName == "" {
+		return pokemon, fmt.Errorf("error: no pokemon name provided")
+	}
+
+	url := baseURL + "/pokemon/" + pokemonName
+	// Check cache
+	if data, ok := client.cache.Get(url); ok {
+		if err := json.Unmarshal(data, &pokemon); err != nil {
+			return pokemon, err
+		}
+		return pokemon, nil
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return pokemon, err
+	}
+
+	res, err := client.httpClient.Do(req)
+	if err != nil {
+		return pokemon, err
+	}
+	defer res.Body.Close()
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return pokemon, err
+	}
+	if res.StatusCode > 299 {
+		return pokemon, fmt.Errorf("response failed with status code: %d and\nbody: %s", res.StatusCode, data)
+	}
+	if err = json.Unmarshal(data, &pokemon); err != nil {
+		return pokemon, err
+	}
+
+	client.cache.Add(url, data)
+	return pokemon, nil
+}

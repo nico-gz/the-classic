@@ -28,13 +28,13 @@ func runRepl(config *CommandConfig) {
 		}
 		userInput := cleanInput(input)
 		commandName := userInput[0]
-		var commandArgument string
+		commandArgs := []string{}
 		if len(userInput) > 1 {
-			commandArgument = userInput[1]
+			commandArgs = userInput[1:]
 		}
 
 		if command, ok := getCommands()[commandName]; ok {
-			err := command.callback(config, commandArgument)
+			err := command.callback(config, commandArgs...)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -80,6 +80,11 @@ func getCommands() map[string]cliCommand {
 			name:        "explore",
 			description: "Explores a location",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Attempt to catch a Pokemon",
+			callback:    commandCatch,
 		},
 	}
 }
