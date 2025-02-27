@@ -127,3 +127,15 @@ func commandInspect(config *CommandConfig, args ...string) error {
 
 	return nil
 }
+
+func commandPokedex(config *CommandConfig, args ...string) error {
+	if len(config.Pokedex) == 0 {
+		fmt.Println("No Pokemon captured yet.")
+		return nil
+	}
+	fmt.Println("Captured Pokemon:")
+	for _, pokemon := range config.Pokedex {
+		fmt.Printf("  - %s\n", pokemon.Name)
+	}
+	return nil
+}
